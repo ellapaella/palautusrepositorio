@@ -1,18 +1,14 @@
 
-from player_reader import PlayerReader
-from player_stats import PlayerStats
-
 from rich.console import Console
 from rich.table import Table
+
+from player_reader import PlayerReader
+from player_stats import PlayerStats
 
 def main():
     console = Console()
 
-    # Ask the user for the season
-    season = input("Season (e.g. 2024-25): ")
-
-    # Ask the user for nationality
-    nationality = input("Nationality (e.g. FIN): ")
+    season, nationality = get_user_input()
 
     url = f"https://studies.cs.helsinki.fi/nhlstats/{season}/players"
 
@@ -21,7 +17,14 @@ def main():
 
     players = stats.top_scorers_by_nationality(nationality)
 
-    # Create a Rich table
+    if not players:
+        console.print("No players found!", style="bold red")
+        return
+
+    table = create_player_table(players, season, nationality)
+    console.print(table)
+
+def create_player_table(players, season, nationality):
     table = Table(title=f"Season {season} players from {nationality}")
 
     table.add_column("Player", style="cyan")
@@ -30,7 +33,6 @@ def main():
     table.add_column("Assists", style="green", justify="right")
     table.add_column("Points", style="green", justify="right")
 
-    # Add players to the table
     for player in players:
         table.add_row(
             player.name,
@@ -40,9 +42,13 @@ def main():
             str(player.points())
         )
 
-    # Display the table
-    console.print(table)
+    return table
 
+def get_user_input():
+    season = input("Season (e.g. 2024-25): ")
+    nationality = input("Nationality (e.g. FIN): ")
+
+    return season, nationality
 
 if __name__ == "__main__":
     main()
